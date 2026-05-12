@@ -20,4 +20,12 @@ public class Position {
         // Return a new instance to keep Position immutable
         return new Position(this.r + d.getDr(), this.c + d.getDc());
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Position)) return false;
+        Position other = (Position) o;
+        return this.r == other.r && this.c == other.c;
+    }
 }
