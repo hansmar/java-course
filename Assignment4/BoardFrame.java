@@ -9,8 +9,6 @@ public class BoardFrame extends BoardElement {
 
     @Override
     public void renderOn(BoardDisplay display) {
-        // Empty body. BoardDisplay's show() always draws the outer boundary;
-        // BoardFrame doesn't need to do anything visible.
     }
 
     @Override
@@ -27,7 +25,6 @@ public class BoardFrame extends BoardElement {
             return true;
         }
 
-        // Otherwise return false.
         return false;
     }
 }

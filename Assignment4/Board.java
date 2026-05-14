@@ -12,6 +12,12 @@ public class Board {
         this.cols = cols;
     }
 
+    public void tick() {
+        for (BoardElement e : elements) {
+            e.tick();
+        }
+    }
+
     public void addRobot(Robot robot) {
         // Add to BOTH lists — robots is a subset of elements.
         robots.add(robot);
@@ -34,7 +40,6 @@ public class Board {
      * The slide algorithm: keep stepping the robot until something blocks.
      */
     public void move(Robot robot, Direction direction) {
-        // Keep looping as long as the robot is NOT blocked
         while (!isBlocked(robot, direction)) {
             robot.step(direction);
         }
@@ -49,14 +54,13 @@ public class Board {
                 return true; // Something blocked the path
             }
         }
-        return false; // Path is clear
+        return false;
     }
 
     public BoardDisplay render() {
-        // Create a fresh BoardDisplay (size matches board dimensions)
         BoardDisplay display = new BoardDisplay(this.rows, this.cols);
         
-        // Have every element render itself onto the fresh display
+        // Have every element render itself onto the display
         for (BoardElement element : elements) {
             element.renderOn(display);
         }

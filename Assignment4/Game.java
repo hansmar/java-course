@@ -1,32 +1,30 @@
 import java.util.Scanner;
 
 public class Game {
-    private final Board board;
+    private Board board;
     private int moveCount = 0;
     private final Scanner scanner = new Scanner(System.in);
 
-    public Game() {
-        // Build the board for the configuration:
+    private void setupBoard() {
         this.board = new Board(4, 7);
-        
-        // Add Frame
         board.addElement(new BoardFrame(4, 7));
-        
-        // Add Robots
-        board.addRobot(new Robot(1, 1, "BB"));
-        board.addRobot(new Robot(2, 3, "AA"));
-        board.addRobot(new Robot(4, 7, "CC"));
-        
-        // Add Goal
-        board.addElement(new Goal(3, 6, "gg"));
-        
-        // Add Walls
-        board.addElement(new VerticalWall(2, 3, 1));   // east wall right of AA
-        board.addElement(new HorizontalWall(1, 4, 2)); // south walls under (1,4) and (1,5)
-        board.addElement(new HorizontalWall(2, 3, 1)); // south wall under AA
+        board.addElement(new Goal(3, 6, "gg", Color.RED));
+        board.addRobot(new Robot(1, 1, "BB", Color.BLUE));
+        board.addRobot(new Robot(2, 3, "AA", Color.GREEN));
+        board.addRobot(new Robot(4, 7, "CC", Color.YELLOW));
+        board.addElement(new VerticalWall(2, 3, 1));
+        board.addElement(new HorizontalWall(1, 4, 2));
+        board.addElement(new HorizontalWall(2, 3, 1));
+        board.addElement(new MoveableHorizontalWall(3, 1, 2, 1, 3, 1, 7, 1));
+    }
+
+    public Game() {
+        setupBoard();
     }
 
     public void play() {
+    while (true) {
+        // Inner loop: one round
         while (!isGameOver()) {
             clearConsole();
             board.render().show();
@@ -41,7 +39,7 @@ public class Game {
             Robot robot = findRobot(robotName);
             if (robot == null) {
                 System.out.println("No such robot! Press enter to try again.");
-                scanner.nextLine(); scanner.nextLine(); // Pause
+                scanner.nextLine(); scanner.nextLine();
                 continue;
             }
 
@@ -50,18 +48,32 @@ public class Game {
             Direction dir = parseDirection(dirInput);
             if (dir == null) {
                 System.out.println("Invalid direction! Press enter to try again.");
-                scanner.nextLine(); scanner.nextLine(); // Pause
+                scanner.nextLine(); scanner.nextLine();
                 continue;
             }
 
             board.move(robot, dir);
             moveCount++;
+            board.tick();
         }
 
-        // Final Win State
+        // Round ended — show win screen
         clearConsole();
         board.render().show();
         System.out.println("You won in " + moveCount + " moves!");
+
+        // Retry prompt
+        System.out.print("Play again? (y/n): ");
+        String again = scanner.next().trim().toLowerCase();
+        if (!again.startsWith("y")) {
+            System.out.println("Thanks for playing!");
+            break;
+        }
+
+        // Reset state for a fresh round
+        moveCount = 0;
+        setupBoard();
+        }
     }
 
     private boolean isGameOver() {

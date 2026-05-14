@@ -1,0 +1,5 @@
+Extension 1: Colored game elements
+Each robot and the goal can be assigned a color from a Color enum (RED, GREEN, BLUE, YELLOW) that holds the ANSI escape codes for coloring. BoardDisplay was extended with an overloaded set() method that takes a color parameter, and Robot and Goal each get a Color field that they pass through when rendering themselves. When the board prints, each cell's content is wrapped in the appropriate escape codes so it appears in the chosen color in the terminal.
+
+Extension 2: Randomly relocating wall
+A new BoardElement subclass, MoveableHorizontalWall, behaves like a regular horizontal wall but periodically teleports to a random row within a configured range. A tick() method was added to BoardElement with an empty default body, a corresponding tick() method on Board that iterates the elements and notifies each, and a single call to board.tick() at the end of each turn in Game.play(). MoveableHorizontalWall overrides tick() to relocate itself using java.util.Random.

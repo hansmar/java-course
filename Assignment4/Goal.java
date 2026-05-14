@@ -3,22 +3,24 @@ import java.util.List;
 public class Goal extends BoardElement {
     private final Position position;
     private final String name;
+    private final Color color;
 
-    public Goal(int row, int col, String name) {
+    public Goal(int row, int col, String name, Color color) {
         // Same pattern as Robot's constructor:
         // build a Position from row/col and store the name.
         this.position = new Position(row, col);
         this.name = name;
+        this.color = color;
     }
 
     @Override
     public void renderOn(BoardDisplay display) {
-        // Same idea as Robot: display.set(row, col, name).
-        display.set(position.getR(), position.getC(), name);
+        display.set(position.getR(), position.getC(), this.name, this.color);
     }
 
     @Override
     public boolean interact(Robot robot, Direction direction) {
+        // Goals don't block — robots slide right through them.
         return false;
     }
 

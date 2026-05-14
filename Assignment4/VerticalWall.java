@@ -6,6 +6,8 @@ public class VerticalWall extends BoardElement {
     public VerticalWall(int row, int col, int n) {
         this.col = col;
         // Convert signed n into a row range.
+        // n > 0: wall runs south, ending at row + n - 1.
+        // n < 0: wall runs north, ending at row + n + 1.
         int endRow = row + (n > 0 ? n - 1 : n + 1);
         this.minRow = Math.min(row, endRow);
         this.maxRow = Math.max(row, endRow);

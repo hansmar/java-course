@@ -6,6 +6,8 @@ public class HorizontalWall extends BoardElement {
     public HorizontalWall(int row, int col, int n) {
         this.row = row;
         // Convert signed n into a column range.
+        // n > 0: wall runs east, ending at col + n - 1.
+        // n < 0: wall runs west, ending at col + n + 1.
         int endCol = col + (n > 0 ? n - 1 : n + 1);
         this.minCol = Math.min(col, endCol);
         this.maxCol = Math.max(col, endCol);
@@ -40,8 +42,6 @@ public class HorizontalWall extends BoardElement {
                 return true;
             }
         }
-
-        // Any other move passes through.
         return false;
     }
 }

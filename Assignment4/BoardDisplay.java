@@ -4,6 +4,8 @@ public class BoardDisplay {
     private boolean[][] eastWall;
     private int rows, cols;
 
+    private Color[][] cellColor;
+
     public BoardDisplay(int rows, int cols) {
         this.rows = rows;
         this.cols = cols;
@@ -11,27 +13,33 @@ public class BoardDisplay {
         content = new String[rows][cols];
         southWall = new boolean[rows][cols];
         eastWall = new boolean[rows][cols];
+        cellColor = new Color[rows][cols];
 
         // Initialize with spaces to prevent NullPointerException during show()
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
                 content[r][c] = "  ";
+                cellColor[r][c] = Color.DEFAULT;
             }
         }
     }
 
     public void set(int row, int col, String text) {
-        // Convert 1-based input to 0-based index
+        set(row, col, text, Color.DEFAULT);
+    }
+
+    public void set(int row, int col, String text, Color color) {
         int r = row - 1;
         int c = col - 1;
 
         if (text == null) {
             content[r][c] = "  ";
         } else if (text.length() < 2) {
-            content[r][c] = (text + "  ").substring(0, 2); // Pad
+            content[r][c] = (text + "  ").substring(0, 2);
         } else {
-            content[r][c] = text.substring(0, 2); // Trim
+            content[r][c] = text.substring(0, 2);
         }
+        cellColor[r][c] = color;
     }
 
     public void setSouthWall(int row, int col) {
@@ -70,16 +78,18 @@ public class BoardDisplay {
     private void printContentRow(int r) {
         StringBuilder sb = new StringBuilder("|");
         for (int c = 0; c < cols; c++) {
+            // NEW: wrap content with color codes
+            sb.append(cellColor[r][c].getCode());
             sb.append(content[r][c]);
-            
-            // Wall if set OR if it's the right edge of the board
+            sb.append(Color.DEFAULT.getCode());
+
             if (eastWall[r][c] || c == cols - 1) {
                 sb.append("|");
             } else {
                 sb.append(" ");
             }
         }
-        System.out.println(sb.toString());
+        System.out.println(sb);
     }
 
     private void printSouthWallRow(int r) {
