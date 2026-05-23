@@ -34,7 +34,7 @@ public class Main {
         dungeon.addEntity(new Treasure(15, 6));
 
         // Place Player safely in the open dungeon center
-        Player player = new Player(10, 5, 100);
+        Player player = new Player(10, 5, /*maxHealth*/ 100, /*attackDamage*/ 25);
 
         // Turn on the simulation engine
         Game game = new Game(dungeon, player);

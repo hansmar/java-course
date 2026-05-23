@@ -3,10 +3,12 @@ import java.util.List;
 
 public class Player extends LivingEntity {
     private final List<Item> inventory;
+    private final int attackDamage;
     private boolean hasWon;
 
-    public Player(int x, int y, int maxHealth) {
+    public Player(int x, int y, int maxHealth, int attackDamage) {
         super(x, y, maxHealth);
+        this.attackDamage = attackDamage;
         this.inventory = new ArrayList<>();
         this.hasWon = false;
     }
@@ -34,6 +36,8 @@ public class Player extends LivingEntity {
 
     // --- Player Specific Logic ---
     // HP / heal / damage / isDead all inherited from LivingEntity.
+
+    public int getAttackDamage() { return attackDamage; }
 
     public void moveTo(int x, int y) {
         this.x = x;

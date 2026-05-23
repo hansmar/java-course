@@ -1,5 +1,7 @@
 // Shared base for anything with hit points: the player and all enemies.
 // Sits between Entity and Player/Enemy so HP code isn't duplicated and
+// isn't pushed into Entity (where walls/water/treasure would inherit it
+// nonsensically).
 public abstract class LivingEntity extends Entity {
     private int health;
     private final int maxHealth;

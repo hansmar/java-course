@@ -29,26 +29,27 @@ public class Zombie extends Enemy {
         }
 
         // Not adjacent — try to close the gap. Greedy: step along whichever axis
-        // has the larger remaining distance. If that axis is blocked, try the other.
-        int stepX = 0;
-        int stepY = 0;
+        // has the larger remaining distance. If that axis is blocked, try the other —
+        // but only if the other axis actually has a non-zero component, otherwise the
+        // "fallback" is just (0, 0) and the zombie freezes in place.
+        int primaryX = 0, primaryY = 0;
         if (Math.abs(dx) >= Math.abs(dy)) {
-            stepX = Integer.signum(dx);
+            primaryX = Integer.signum(dx);
         } else {
-            stepY = Integer.signum(dy);
+            primaryY = Integer.signum(dy);
         }
 
-        if (tryStep(dungeon, player, stepX, stepY)) return "";
+        if (tryStep(dungeon, player, primaryX, primaryY)) return "";
 
-        // Preferred axis blocked. Try the other axis.
-        if (stepX != 0) {
-            stepX = 0;
-            stepY = Integer.signum(dy);
-        } else {
-            stepY = 0;
-            stepX = Integer.signum(dx);
+        // Primary blocked. Try the other axis — only if it's a real direction.
+        int fallbackX = (primaryX != 0) ? 0 : Integer.signum(dx);
+        int fallbackY = (primaryY != 0) ? 0 : Integer.signum(dy);
+        if (fallbackX != 0 || fallbackY != 0) {
+            tryStep(dungeon, player, fallbackX, fallbackY);
         }
-        tryStep(dungeon, player, stepX, stepY);
+        // If both axes are blocked (or only one axis exists and it's blocked),
+        // the zombie just waits this turn. Greedy AI has limits; a proper BFS
+        // would route around L-shaped obstacles. Documented in the report.
         return "";
     }
 

@@ -21,10 +21,7 @@ public abstract class Enemy extends LivingEntity {
     // but the default covers the common case the spec describes.
     @Override
     public String interactWith(Player player) {
-        // Player's counter-attack: matches how the spec phrases it — moving onto an
-        // enemy is an attack exchange. We hard-code the player's damage at 25 here;
-        // a cleaner future design would put the player's attack power on Player itself.
-        int playerDamage = 25;
+        int playerDamage = player.getAttackDamage();
         damage(playerDamage);
 
         StringBuilder msg = new StringBuilder();
