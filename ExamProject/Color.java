@@ -6,7 +6,7 @@ public enum Color {
     BLUE("\u001B[34m", "\u001B[44m"),
     MAGENTA("\u001B[35m", "\u001B[45m"),
     CYAN("\u001B[36m", "\u001B[46m"),
-    WHITE("\u001B[37m", "\u001B[47m");
+    WHITE("\u001B[37m", "\u001B[47m"); // Removed RESET from enum list
 
     // Global control code constant
     public static final String RESET = "\u001B[0m";
