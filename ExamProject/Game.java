@@ -103,7 +103,20 @@ public class Game {
             player.moveTo(targetX, targetY);
         }
 
-        // 7. End of turn engine updates
+        // 7. End of turn: every entity gets to act, then cleanup.
+        // Skip if the player has already died or won this turn — no point letting
+        // enemies attack a corpse or the engine bookkeeping a finished game.
+        if (!player.isDead() && !player.hasWon()) {
+            java.util.List<String> turnMessages = dungeon.tickAll(player);
+            if (!turnMessages.isEmpty()) {
+                StringBuilder sb = new StringBuilder(statusMessage);
+                for (String m : turnMessages) {
+                    if (sb.length() > 0) sb.append(" ");
+                    sb.append(m);
+                }
+                statusMessage = sb.toString();
+            }
+        }
         dungeon.cleanup();
     }
 

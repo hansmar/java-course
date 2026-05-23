@@ -11,13 +11,15 @@ public class Fire extends Entity {
     @Override
     protected char getSymbol() { return '^'; }
 
-    // Color telegraphs remaining intensity: bright red → red → yellow as it dies down.
-    // The template method calls these every render, so state-dependent visuals are free.
+    // Color telegraphs remaining intensity. Three real states now:
+    //   3 charges → yellow (hot/bright)
+    //   2 charges → red   (burning down)
+    //   1 charge  → magenta (embers, about to die)
     @Override
     protected Color getFg() {
-        if (interactionsRemaining >= 3) return Color.RED;
+        if (interactionsRemaining >= 3) return Color.YELLOW;
         if (interactionsRemaining == 2) return Color.RED;
-        return Color.YELLOW; // last charge — clearly weakening
+        return Color.MAGENTA;
     }
 
     @Override

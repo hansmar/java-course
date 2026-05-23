@@ -1,16 +1,12 @@
 import java.util.ArrayList;
 import java.util.List;
 
-public class Player extends Entity {
-    private int health;
-    private final int maxHealth;
+public class Player extends LivingEntity {
     private final List<Item> inventory;
     private boolean hasWon;
 
     public Player(int x, int y, int maxHealth) {
-        super(x, y);
-        this.maxHealth = maxHealth;
-        this.health = maxHealth; // Start at full health
+        super(x, y, maxHealth);
         this.inventory = new ArrayList<>();
         this.hasWon = false;
     }
@@ -37,25 +33,7 @@ public class Player extends Entity {
     }
 
     // --- Player Specific Logic ---
-
-    public int getHealth() { return health; }
-    public int getMaxHealth() { return maxHealth; }
-
-    public void heal(int amount) {
-        if (amount > 0) {
-            this.health = Math.min(this.health + amount, this.maxHealth);
-        }
-    }
-
-    public void damage(int amount) {
-        if (amount > 0) {
-            this.health = Math.max(this.health - amount, 0);
-        }
-    }
-
-    public boolean isDead() {
-        return this.health <= 0;
-    }
+    // HP / heal / damage / isDead all inherited from LivingEntity.
 
     public void moveTo(int x, int y) {
         this.x = x;
@@ -69,7 +47,7 @@ public class Player extends Entity {
     }
 
     public List<Item> getInventory() {
-        return new ArrayList<>(inventory); // Return defensive copy
+        return new ArrayList<>(inventory); // defensive copy
     }
 
     public boolean hasWon() {

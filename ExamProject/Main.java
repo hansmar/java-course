@@ -27,6 +27,9 @@ public class Main {
         // Generic item pickup — a health potion sitting on the floor
         dungeon.addEntity(new ItemPickup(12, 3, new HealthPotion(30)));
 
+        // A zombie. Walk near it and watch it close the gap, then attack.
+        dungeon.addEntity(new Zombie(14, 2));
+
         // Treasure
         dungeon.addEntity(new Treasure(15, 6));
 
