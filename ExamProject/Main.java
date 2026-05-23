@@ -21,6 +21,12 @@ public class Main {
         // Healing water
         dungeon.addEntity(new Water(3, 3, 25));
 
+        // Fire — burns 3 times, then dies. 10 damage per step.
+        dungeon.addEntity(new Fire(7, 5, 10));
+
+        // Generic item pickup — a health potion sitting on the floor
+        dungeon.addEntity(new ItemPickup(12, 3, new HealthPotion(30)));
+
         // Treasure
         dungeon.addEntity(new Treasure(15, 6));
 

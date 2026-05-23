@@ -40,7 +40,8 @@ public class Game {
         canvas.show();
 
         // 3. Status Display
-        System.out.println("HP: " + player.getHealth() + "/" + player.getMaxHealth());
+        System.out.println("HP: " + player.getHealth() + "/" + player.getMaxHealth()
+                + "   Inventory: " + player.getInventory().size());
         System.out.println("Status: " + statusMessage);
         System.out.print("> ");
 
@@ -84,14 +85,18 @@ public class Game {
         if (targetEntity == null) {
             canEnter = true;
         } else {
-            // Process the bump action
-            statusMessage = targetEntity.interactWith(player);
+            // Let the entity speak for itself first
+            String result = targetEntity.interactWith(player);
 
             // Decide if the player can slide into the cell coordinate
             canEnter = !targetEntity.isOccupying();
-            if (!canEnter) {
-                statusMessage = "Ouch! You bumped into something solid.";
+
+            // Only inject the generic bump line if the entity had nothing to say.
+            // This keeps "entities own their voice" — Game doesn't impose flavor.
+            if (!canEnter && result.isEmpty()) {
+                result = "Ouch! You bumped into something solid.";
             }
+            statusMessage = result;
         }
 
         if (canEnter) {
