@@ -16,12 +16,14 @@ public class Game {
     }
 
     public void start() {
-        while (isRunning && !player.isDead()) {
+        while (isRunning && !player.isDead() && !player.hasWon()) {
             tick();
         }
-        
+
         if (player.isDead()) {
             System.out.println("\n*** YOU DIED ***");
+        } else if (player.hasWon()) {
+            System.out.println("\n*** YOU FOUND THE TREASURE! YOU WIN! ***");
         } else {
             System.out.println("\nGoodbye!");
         }
@@ -83,7 +85,8 @@ public class Game {
             canEnter = true;
         } else {
             // Process the bump action
-            targetEntity.interactWith(player);
+            statusMessage = targetEntity.interactWith(player);
+
             // Decide if the player can slide into the cell coordinate
             canEnter = !targetEntity.isOccupying();
             if (!canEnter) {

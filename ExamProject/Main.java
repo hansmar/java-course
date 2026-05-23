@@ -18,6 +18,12 @@ public class Main {
         dungeon.addEntity(new Wall(5, 4));
         dungeon.addEntity(new Wall(5, 5));
 
+        // Healing water
+        dungeon.addEntity(new Water(3, 3, 25));
+
+        // Treasure
+        dungeon.addEntity(new Treasure(15, 6));
+
         // Place Player safely in the open dungeon center
         Player player = new Player(10, 5, 100);
 
@@ -26,4 +32,3 @@ public class Main {
         game.start();
     }
 }
-

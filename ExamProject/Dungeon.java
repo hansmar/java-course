@@ -40,6 +40,6 @@ public class Dungeon {
 
     // Clean up entities marked for deletion at the end of the turn (for later items/traps)
     public void cleanup() {
-        // We can hook in entities.removeIf(...) later when we add life-cycle states.
+        entities.removeIf(Entity::isConsumed);
     }
 }

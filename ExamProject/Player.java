@@ -5,12 +5,14 @@ public class Player extends Entity {
     private int health;
     private final int maxHealth;
     private final List<Item> inventory;
+    private boolean hasWon;
 
     public Player(int x, int y, int maxHealth) {
         super(x, y);
         this.maxHealth = maxHealth;
         this.health = maxHealth; // Start at full health
         this.inventory = new ArrayList<>();
+        this.hasWon = false;
     }
 
     // --- Entity Implementation ---
@@ -30,8 +32,8 @@ public class Player extends Entity {
     }
 
     @Override
-    public void interactWith(Player player) {
-        // A player cannot physically bump into themselves; this operation is a safe no-op.
+    public String interactWith(Player player) {
+        return "";
     }
 
     // --- Player Specific Logic ---
@@ -68,5 +70,13 @@ public class Player extends Entity {
 
     public List<Item> getInventory() {
         return new ArrayList<>(inventory); // Return defensive copy
+    }
+
+    public boolean hasWon() {
+        return hasWon;
+    }
+
+    public void setWon() {
+        this.hasWon = true;
     }
 }

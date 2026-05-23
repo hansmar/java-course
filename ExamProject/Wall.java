@@ -13,8 +13,8 @@ public class Wall extends Entity {
     @Override
     protected Color getBg() { return Color.BLACK; }
 
-    @Override
-    public void interactWith(Player player) {
-        // Walls do nothing when bumped into.
+   @Override
+    public String interactWith(Player player) {
+        return "";
     }
 }
