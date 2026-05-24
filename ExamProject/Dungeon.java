@@ -5,15 +5,27 @@ public class Dungeon {
     private final List<Entity> entities;
     private final int width;
     private final int height;
+    private final int startX;
+    private final int startY;
 
-    public Dungeon(int width, int height) {
+    public Dungeon(int width, int height, int startX, int startY) {
         this.width = width;
         this.height = height;
+        this.startX = startX;
+        this.startY = startY;
         this.entities = new ArrayList<>();
+    }
+
+    // Convenience for code that doesn't care about start position (tests, ad-hoc setup).
+    // Defaults to (1, 1) — just inside a typical bordered map.
+    public Dungeon(int width, int height) {
+        this(width, height, 1, 1);
     }
 
     public int getWidth() { return width; }
     public int getHeight() { return height; }
+    public int getStartX() { return startX; }
+    public int getStartY() { return startY; }
 
     public void addEntity(Entity e) {
         if (e != null) {

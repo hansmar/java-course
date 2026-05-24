@@ -2,18 +2,30 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Game {
-    private final Dungeon dungeon;
+    private final List<Dungeon> dungeons;
+    private int currentLevel;
     private final Player player;
     private final Scanner scanner;
     private boolean isRunning;
     private String statusMessage;
 
-    public Game(Dungeon dungeon, Player player) {
-        this.dungeon = dungeon;
+    public Game(List<Dungeon> dungeons, Player player) {
+        if (dungeons == null || dungeons.isEmpty()) {
+            throw new IllegalArgumentException("Game requires at least one dungeon.");
+        }
+        this.dungeons = dungeons;
+        this.currentLevel = 0;
         this.player = player;
         this.scanner = new Scanner(System.in);
         this.isRunning = true;
         this.statusMessage = "Welcome to the Dungeon! Use W/A/S/D to move. Q to quit.";
+    }
+
+    // Single source of truth for "which level are we on right now". Every place
+    // that used to say `dungeon` goes through here, so the level-advance logic
+    // only lives in one spot.
+    private Dungeon currentDungeon() {
+        return dungeons.get(currentLevel);
     }
 
     public void start() {
@@ -35,8 +47,8 @@ public class Game {
         clearScreen();
 
         // 2. Build the visual frame
-        Canvas canvas = new Canvas(dungeon.getWidth(), dungeon.getHeight());
-        dungeon.renderOn(canvas);
+        Canvas canvas = new Canvas(currentDungeon().getWidth(), currentDungeon().getHeight());
+        currentDungeon().renderOn(canvas);
         player.renderOn(canvas); // Render player last so they layer on top of floors/hazards
         canvas.show();
 
@@ -87,10 +99,10 @@ public class Game {
                 statusMessage = ""; // Reset status message for the new turn
 
                 // Canvas boundary validation
-                if (targetX < 0 || targetX >= dungeon.getWidth() || targetY < 0 || targetY >= dungeon.getHeight()) {
+                if (targetX < 0 || targetX >= currentDungeon().getWidth() || targetY < 0 || targetY >= currentDungeon().getHeight()) {
                     statusMessage = "An unseen magical force blocks you from leaving the bounds.";
                 } else {
-                    Entity targetEntity = dungeon.entityAt(targetX, targetY);
+                    Entity targetEntity = currentDungeon().entityAt(targetX, targetY);
                     boolean canEnter;
 
                     if (targetEntity == null) {
@@ -117,11 +129,28 @@ public class Game {
             }
         }
 
-        // 6. End of turn: enemies act ONLY if the player took a real turn.
+        // 6. Level transition: if the player stepped on a staircase, advance.
+        // Done BEFORE the enemy phase, so enemies on the new level don't get
+        // a free swing on the transition step.
+        if (player.wantsNextLevel()) {
+            player.clearNextLevelRequest();
+            if (currentLevel + 1 < dungeons.size()) {
+                currentLevel++;
+                Dungeon next = currentDungeon();
+                player.moveTo(next.getStartX(), next.getStartY());
+                statusMessage = "You arrive on level " + (currentLevel + 1) + ".";
+            } else {
+                // Shouldn't happen — last level shouldn't contain a staircase.
+                // Defensive: if it does, ignore the request rather than crash.
+                statusMessage = "The staircase leads nowhere... (no further levels)";
+            }
+        }
+
+        // 7. End of turn: enemies act ONLY if the player took a real turn.
         // Also skip if the player has already died or won this turn — no point
         // letting enemies attack a corpse or the engine bookkeeping a finished game.
         if (playerActed && !player.isDead() && !player.hasWon()) {
-            List<String> turnMessages = dungeon.tickAll(player);
+            List<String> turnMessages = currentDungeon().tickAll(player);
             if (!turnMessages.isEmpty()) {
                 StringBuilder sb = new StringBuilder(statusMessage);
                 for (String m : turnMessages) {
@@ -131,7 +160,7 @@ public class Game {
                 statusMessage = sb.toString();
             }
         }
-        dungeon.cleanup();
+        currentDungeon().cleanup();
     }
 
     private void clearScreen() {
