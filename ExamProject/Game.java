@@ -138,7 +138,10 @@ public class Game {
                 currentLevel++;
                 Dungeon next = currentDungeon();
                 player.moveTo(next.getStartX(), next.getStartY());
-                statusMessage = "You arrive on level " + (currentLevel + 1) + ".";
+                // Accumulate rather than overwrite — the staircase's own message
+                // (e.g. "You descend the staircase...") deserves to survive.
+                String prefix = statusMessage.isEmpty() ? "" : statusMessage + " ";
+                statusMessage = prefix + "You arrive on level " + (currentLevel + 1) + ".";
             } else {
                 // Shouldn't happen — last level shouldn't contain a staircase.
                 // Defensive: if it does, ignore the request rather than crash.

@@ -60,10 +60,13 @@ public class DungeonLoader {
             }
         }
         if (startX == -1) {
-            // No '@' — default to (1,1). Reasonable for a bordered map; loud enough
-            // in the report ("levels should declare @ explicitly") to flag as a smell.
-            startX = 1;
-            startY = 1;
+            // Missing @ = malformed level file. Consistent with how we treat
+            // unknown characters: throw with a clear message, let Main report it,
+            // exit cleanly. Silently teleporting to (1,1) was a hedge that could
+            // drop the player into a wall.
+            throw new IllegalArgumentException(
+                "Level file '" + path + "' has no player start position ('@')"
+            );
         }
 
         Dungeon dungeon = new Dungeon(width, height, startX, startY);
