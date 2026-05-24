@@ -8,10 +8,14 @@ import java.util.List;
  *
  * Map symbols:
  *   #   indestructible wall
+ *   %   destructible wall (40 HP, breakable with attacks)
  *   .   empty floor
  *   ~   water (heals 25)
  *   ^   fire (10 damage, 3 charges)
- *   Z   zombie
+ *   Z   zombie  (40 HP,  8 dmg, 1 step/turn)
+ *   G   ghoul   (25 HP, 12 dmg, 2 steps/turn — fast, fragile)
+ *   d   cave dog (20 HP, 5 dmg, 2 steps/turn — weak fast)
+ *   s   slime   (60 HP,  4 dmg, acts every other turn — slow tank)
  *   >   staircase (descend to next level)
  *   $   treasure (win condition)
  *   P   health potion pickup (restores 30 HP when used)
@@ -96,10 +100,22 @@ public class DungeonLoader {
             case '@':
             case ' ': // tolerate trailing/padding whitespace as floor
                 return null;
-            case '#': return new Wall(x, y);
+
+            // --- Walls ---
+            case '#': return new IndestructibleWall(x, y);
+            case '%': return new DestructibleWall(x, y, 40);
+
+            // --- Terrain / hazards ---
             case '~': return new Water(x, y, 25);
             case '^': return new Fire(x, y, 10);
+
+            // --- Enemies ---
             case 'Z': return new Zombie(x, y);
+            case 'G': return new Ghoul(x, y);
+            case 'd': return new CaveDog(x, y);
+            case 's': return new Slime(x, y);
+
+            // --- Special ---
             case '>': return new Staircase(x, y);
             case '$': return new Treasure(x, y);
 
