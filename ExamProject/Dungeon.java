@@ -16,8 +16,6 @@ public class Dungeon {
         this.entities = new ArrayList<>();
     }
 
-    // Convenience for code that doesn't care about start position (tests, ad-hoc setup).
-    // Defaults to (1, 1) — just inside a typical bordered map.
     public Dungeon(int width, int height) {
         this(width, height, 1, 1);
     }
@@ -31,6 +29,10 @@ public class Dungeon {
         if (e != null) {
             entities.add(e);
         }
+    }
+
+    public List<Entity> getEntitiesSnapshot() {
+        return new ArrayList<>(entities);
     }
 
     // Finds an entity at a given position, or null if empty
@@ -50,15 +52,10 @@ public class Dungeon {
         }
     }
 
-    // Run a turn for every entity. Returns each entity's non-empty message
-    // so Game can format them for the status line. Game/display concerns
-    // stay out of Dungeon.
     public List<String> tickAll(Player player) {
         List<String> messages = new ArrayList<>();
-        // Iterate a snapshot: a tick may add or remove entities (e.g. a future
-        // bomb explosion), which would ConcurrentModificationException on the live list.
+
         for (Entity e : new ArrayList<>(entities)) {
-            // Skip entities killed earlier this turn — dead enemies don't get a swing.
             if (e.isConsumed()) continue;
             String msg = e.tick(this, player);
             if (msg != null && !msg.isEmpty()) {

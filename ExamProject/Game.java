@@ -9,21 +9,18 @@ public class Game {
     private boolean isRunning;
     private String statusMessage;
 
-    public Game(List<Dungeon> dungeons, Player player) {
+    public Game(List<Dungeon> dungeons, Player player, Scanner scanner) {
         if (dungeons == null || dungeons.isEmpty()) {
             throw new IllegalArgumentException("Game requires at least one dungeon.");
         }
         this.dungeons = dungeons;
         this.currentLevel = 0;
         this.player = player;
-        this.scanner = new Scanner(System.in);
+        this.scanner = scanner;
         this.isRunning = true;
-        this.statusMessage = "Welcome to the Dungeon! Use W/A/S/D to move. Q to quit.";
+        this.statusMessage = "Welcome to the Dungeon! W/A/S/D to move, U to use first item, Q to quit.";
     }
 
-    // Single source of truth for "which level are we on right now". Every place
-    // that used to say `dungeon` goes through here, so the level-advance logic
-    // only lives in one spot.
     private Dungeon currentDungeon() {
         return dungeons.get(currentLevel);
     }
@@ -42,6 +39,10 @@ public class Game {
         }
     }
 
+    public boolean endedNaturally() {
+        return player.isDead() || player.hasWon();
+    }
+
     private void tick() {
         // 1. Clear Console Screen Buffer
         clearScreen();
@@ -49,23 +50,20 @@ public class Game {
         // 2. Build the visual frame
         Canvas canvas = new Canvas(currentDungeon().getWidth(), currentDungeon().getHeight());
         currentDungeon().renderOn(canvas);
-        player.renderOn(canvas); // Render player last so they layer on top of floors/hazards
+        player.renderOn(canvas);
         canvas.show();
 
         // 3. Status Display
+        String fuseInfo = bombFuseInfo();
         System.out.println("HP: " + player.getHealth() + "/" + player.getMaxHealth()
-                + "   Inventory: " + player.getInventory().size());
+                + "   Inventory: " + inventoryDisplay()
+                + fuseInfo);
         System.out.println("Status: " + statusMessage);
         System.out.print("> ");
 
         // 4. Capture Input
         String input = scanner.nextLine().trim().toLowerCase();
 
-        // Whether the player took a real turn this tick. Empty input, unknown
-        // commands, and quit do NOT count as turns — enemies don't act either.
-        // Rationale: a typo or accidental enter shouldn't get you killed. Movement
-        // attempts DO count, even if they're blocked by a wall — otherwise the
-        // player could exploit "walk into wall" as a free turn-skip.
         boolean playerActed = false;
 
         if (input.isEmpty()) {
@@ -78,80 +76,84 @@ public class Game {
                 return;
             }
 
-            // 5. Evaluate Intended Movement Vector
-            int targetX = player.getX();
-            int targetY = player.getY();
-            boolean isMoveCommand = true;
-
-            switch (command) {
-                case 'w' -> targetY--;
-                case 's' -> targetY++;
-                case 'a' -> targetX--;
-                case 'd' -> targetX++;
-                default -> {
-                    statusMessage = "Unknown command. Use W, A, S, D, or Q.";
-                    isMoveCommand = false;
-                }
-            }
-
-            if (isMoveCommand) {
-                playerActed = true;
-                statusMessage = ""; // Reset status message for the new turn
-
-                // Canvas boundary validation
-                if (targetX < 0 || targetX >= currentDungeon().getWidth() || targetY < 0 || targetY >= currentDungeon().getHeight()) {
-                    statusMessage = "An unseen magical force blocks you from leaving the bounds.";
+            if (command == 'u') {
+                String result = player.useItem(0);
+                if (result == null) {
+                    statusMessage = "Nothing to use.";
+                    // Doesn't count as a turn — falls through to !playerActed path.
                 } else {
-                    Entity targetEntity = currentDungeon().entityAt(targetX, targetY);
-                    boolean canEnter;
+                    statusMessage = result;
+                    playerActed = true;
+                }
 
-                    if (targetEntity == null) {
-                        canEnter = true;
-                    } else {
-                        // Let the entity speak for itself first
-                        String result = targetEntity.interactWith(player);
+            } else {
+                // 5. Evaluate Intended Movement Vector
+                int targetX = player.getX();
+                int targetY = player.getY();
+                boolean isMoveCommand = true;
 
-                        // Decide if the player can slide into the cell coordinate
-                        canEnter = !targetEntity.isOccupying();
-
-                        // Only inject the generic bump line if the entity had nothing to say.
-                        // This keeps "entities own their voice" — Game doesn't impose flavor.
-                        if (!canEnter && result.isEmpty()) {
-                            result = "Ouch! You bumped into something solid.";
-                        }
-                        statusMessage = result;
-                    }
-
-                    if (canEnter) {
-                        player.moveTo(targetX, targetY);
+                switch (command) {
+                    case 'w' -> targetY--;
+                    case 's' -> targetY++;
+                    case 'a' -> targetX--;
+                    case 'd' -> targetX++;
+                    default -> {
+                        statusMessage = "Unknown command. Use W, A, S, D, U, or Q.";
+                        isMoveCommand = false;
                     }
                 }
-            }
+
+                if (isMoveCommand) {
+                    playerActed = true;
+                    // Reset status message for the new turn
+                    statusMessage = "";
+
+                    // Canvas boundary validation
+                    if (targetX < 0 || targetX >= currentDungeon().getWidth() || targetY < 0 || targetY >= currentDungeon().getHeight()) {
+                        statusMessage = "An unseen magical force blocks you from leaving the bounds.";
+                    } else {
+                        Entity targetEntity = currentDungeon().entityAt(targetX, targetY);
+                        boolean canEnter;
+
+                        if (targetEntity == null) {
+                            canEnter = true;
+                        } else {
+                            // Let the entity speak for itself first
+                            String result = targetEntity.interactWith(player);
+
+                            // Decide if the player can slide into the cell coordinate
+                            canEnter = !targetEntity.isOccupying();
+
+                            if (!canEnter && result.isEmpty()) {
+                                result = "Ouch! You bumped into something solid.";
+                            }
+                            statusMessage = result;
+                        }
+
+                        if (canEnter) {
+                            player.moveTo(targetX, targetY);
+                        }
+                    }
+                }
+            } // close the else { /* movement */ } that wraps move handling
         }
 
         // 6. Level transition: if the player stepped on a staircase, advance.
-        // Done BEFORE the enemy phase, so enemies on the new level don't get
-        // a free swing on the transition step.
         if (player.wantsNextLevel()) {
             player.clearNextLevelRequest();
             if (currentLevel + 1 < dungeons.size()) {
                 currentLevel++;
                 Dungeon next = currentDungeon();
                 player.moveTo(next.getStartX(), next.getStartY());
-                // Accumulate rather than overwrite — the staircase's own message
                 // (e.g. "You descend the staircase...") deserves to survive.
                 String prefix = statusMessage.isEmpty() ? "" : statusMessage + " ";
                 statusMessage = prefix + "You arrive on level " + (currentLevel + 1) + ".";
             } else {
-                // Shouldn't happen — last level shouldn't contain a staircase.
-                // Defensive: if it does, ignore the request rather than crash.
                 statusMessage = "The staircase leads nowhere... (no further levels)";
             }
         }
 
         // 7. End of turn: enemies act ONLY if the player took a real turn.
-        // Also skip if the player has already died or won this turn — no point
-        // letting enemies attack a corpse or the engine bookkeeping a finished game.
         if (playerActed && !player.isDead() && !player.hasWon()) {
             List<String> turnMessages = currentDungeon().tickAll(player);
             if (!turnMessages.isEmpty()) {
@@ -163,6 +165,13 @@ public class Game {
                 statusMessage = sb.toString();
             }
         }
+
+        // 8. Bomb placement.
+        LitBomb pending = player.takePendingBomb();
+        if (pending != null) {
+            currentDungeon().addEntity(pending);
+        }
+
         currentDungeon().cleanup();
     }
 
@@ -170,5 +179,29 @@ public class Game {
         // ANSI escape sequence to clear screen and move cursor home
         System.out.print("\u001b[H\u001b[2J");
         System.out.flush();
+    }
+
+    // Comma-separated inventory listing for the status display.
+    private String inventoryDisplay() {
+        List<Item> inv = player.getInventory();
+        if (inv.isEmpty()) return "(empty)";
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < inv.size(); i++) {
+            if (i > 0) sb.append(", ");
+            sb.append(inv.get(i).getName());
+        }
+        return sb.toString();
+    }
+
+    // Surface the most urgent (shortest-fuse) bomb's countdown in the HUD.
+    private String bombFuseInfo() {
+        int minFuse = Integer.MAX_VALUE;
+        for (Entity e : currentDungeon().getEntitiesSnapshot()) {
+            if (e instanceof LitBomb bomb && bomb.getFuseTurnsRemaining() < minFuse) {
+                minFuse = bomb.getFuseTurnsRemaining();
+            }
+        }
+        if (minFuse == Integer.MAX_VALUE) return "";
+        return "   Bomb fuse: " + minFuse;
     }
 }

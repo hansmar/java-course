@@ -37,10 +37,7 @@ public abstract class Entity {
 
     // Forced abstraction: every entity type must consciously declare its interaction rule.
     public abstract String interactWith(Player player);
-
-    // Per-turn action. Default is no-op — walls, water, treasure, pickups don't act.
-    // Only entities that need agency (enemies, traps with timers) override this.
-    // Returns a message to append to the turn log (empty = silent).
+    
     public String tick(Dungeon dungeon, Player player) {
         return "";
     }

@@ -1,27 +1,46 @@
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
+    private static final String[] LEVEL_FILES = {
+        "levels/level1.txt",
+        "levels/level2.txt",
+    };
+
     public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            Game game = buildGame(scanner);
+            if (game == null) return; // load failure already reported
+
+            game.start();
+
+            if (!game.endedNaturally()) break;
+
+            System.out.print("\nPress R to restart, any other key to quit: ");
+            String line = scanner.nextLine().trim().toLowerCase();
+            if (!line.equals("r")) break;
+            System.out.println();
+        }
+    }
+    
+    private static Game buildGame(Scanner scanner) {
         DungeonLoader loader = new DungeonLoader();
         List<Dungeon> levels = new ArrayList<>();
 
-        // Level files are loaded in order. The first level is where the player
-        // starts; the last level should contain the treasure and no staircase.
-        String[] levelFiles = { "levels/level1.txt", "levels/level2.txt" };
-
         try {
-            for (String f : levelFiles) {
+            for (String f : LEVEL_FILES) {
                 levels.add(loader.loadFromFile(f));
             }
         } catch (IOException e) {
             System.err.println("Failed to load level file: " + e.getMessage());
-            return;
+            return null;
         } catch (IllegalArgumentException e) {
-            // Malformed level file (unknown character, empty file, etc.)
             System.err.println("Bad level data: " + e.getMessage());
-            return;
+            return null;
         }
 
         Dungeon first = levels.get(0);
@@ -32,7 +51,6 @@ public class Main {
             /*attackDamage*/ 25
         );
 
-        Game game = new Game(levels, player);
-        game.start();
+        return new Game(levels, player, scanner);
     }
 }

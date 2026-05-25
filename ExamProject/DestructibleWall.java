@@ -1,12 +1,5 @@
 /**
- * A wall that can be broken. Extends LivingEntity because it has HP — which
- * is why there's no abstract `Wall` parent above IndestructibleWall and this
- * class. The two share the conceptual category "wall" but have completely
- * different superstructure (Entity vs LivingEntity), so forcing a common
- * abstract class would buy nothing.
- *
- * Combat shape mirrors Enemy: player bumps, takes a swing, wall takes damage,
- * wall says something. Wall doesn't hit back — it's a wall.
+ * A wall that can be broken. Extends LivingEntity because it has HP.
  */
 public class DestructibleWall extends LivingEntity {
 

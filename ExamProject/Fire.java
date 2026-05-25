@@ -11,7 +11,7 @@ public class Fire extends Entity {
     @Override
     protected char getSymbol() { return '^'; }
 
-    // Color telegraphs remaining intensity. Three real states now:
+    // Color telegraphs remaining intensity.
     //   3 charges → yellow (hot/bright)
     //   2 charges → red   (burning down)
     //   1 charge  → magenta (embers, about to die)

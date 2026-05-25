@@ -18,19 +18,13 @@ import java.util.List;
  *   s   slime   (60 HP,  4 dmg, acts every other turn — slow tank)
  *   >   staircase (descend to next level)
  *   $   treasure (win condition)
+ *   T   floor trap (15 damage, one-shot)
+ *   +   arrow trap (20 damage, line-of-sight, one-shot)
  *   P   health potion pickup (restores 30 HP when used)
+ *   B   bomb pickup (30 damage, 3-turn fuse, 3x3 blast radius)
  *   @   player start position (not an entity in the entity list)
- *
- * The first '@' encountered sets the start position. Subsequent '@' characters
- * are treated as floor — only one start per level.
- *
- * Width is taken from the longest line; shorter lines are right-padded with floor.
- *
- * Errors:
- *   - IOException on read failure (file not found, permission, etc.)
- *   - IllegalArgumentException on unknown characters or empty file. The message
- *     includes line and column so malformed levels are debuggable.
- */
+ **/
+
 public class DungeonLoader {
 
     public Dungeon loadFromFile(String path) throws IOException {
@@ -48,8 +42,6 @@ public class DungeonLoader {
             throw new IllegalArgumentException("Level file has no content: " + path);
         }
 
-        // Two-pass: first find the start position so we can construct the Dungeon
-        // with it. (Dungeon's start position is final.) Second pass populates entities.
         int startX = -1, startY = -1;
         for (int y = 0; y < height; y++) {
             String line = lines.get(y);
@@ -64,10 +56,6 @@ public class DungeonLoader {
             }
         }
         if (startX == -1) {
-            // Missing @ = malformed level file. Consistent with how we treat
-            // unknown characters: throw with a clear message, let Main report it,
-            // exit cleanly. Silently teleporting to (1,1) was a hedge that could
-            // drop the player into a wall.
             throw new IllegalArgumentException(
                 "Level file '" + path + "' has no player start position ('@')"
             );
@@ -89,11 +77,6 @@ public class DungeonLoader {
         return dungeon;
     }
 
-    /**
-     * Maps a single map character to an Entity, or returns null for "no entity
-     * here" (floor, player start, or padding). Unknown characters throw — silent
-     * failure on a typo'd level file would be miserable to debug.
-     */
     private Entity symbolToEntity(char c, int x, int y) {
         switch (c) {
             case '.':
@@ -119,11 +102,13 @@ public class DungeonLoader {
             case '>': return new Staircase(x, y);
             case '$': return new Treasure(x, y);
 
+            // --- Traps ---
+            case 'T': return new FloorTrap(x, y, 15);
+            case '+': return new ArrowTrap(x, y, 20);
+
             // --- Items ---
-            // Each item type gets its own symbol. Add new items below as they're
-            // implemented. Keep this section grouped so it's easy to scan.
             case 'P': return new ItemPickup(x, y, new HealthPotion(30));
-            // case 'B': return new ItemPickup(x, y, new Bomb(...));  // TODO when Bomb exists
+            case 'B': return new ItemPickup(x, y, new Bomb(/*damage*/ 30, /*fuse*/ 3));
 
             default:
                 throw new IllegalArgumentException(

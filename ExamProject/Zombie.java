@@ -14,7 +14,7 @@ public class Zombie extends Enemy {
     protected Color getBg() { return Color.BLACK; }
 
     @Override
-    protected String getName() { return "zombie"; }
+    public String getName() { return "zombie"; }
 
     @Override
     public String tick(Dungeon dungeon, Player player) {

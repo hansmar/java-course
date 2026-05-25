@@ -6,6 +6,7 @@ public class Player extends LivingEntity {
     private final int attackDamage;
     private boolean hasWon;
     private boolean wantsNextLevel;
+    private LitBomb pendingBomb; // bomb to drop at end of this turn, or null
 
     public Player(int x, int y, int maxHealth, int attackDamage) {
         super(x, y, maxHealth);
@@ -13,6 +14,7 @@ public class Player extends LivingEntity {
         this.inventory = new ArrayList<>();
         this.hasWon = false;
         this.wantsNextLevel = false;
+        this.pendingBomb = null;
     }
 
     // --- Entity Implementation ---
@@ -56,6 +58,12 @@ public class Player extends LivingEntity {
         return new ArrayList<>(inventory); // defensive copy
     }
 
+    public String useItem(int slot) {
+        if (slot < 0 || slot >= inventory.size()) return null;
+        Item item = inventory.remove(slot);
+        return item.use(this);
+    }
+
     public boolean hasWon() {
         return hasWon;
     }
@@ -64,9 +72,6 @@ public class Player extends LivingEntity {
         this.hasWon = true;
     }
 
-    // Level transition: an entity (Staircase) sets this flag during interactWith.
-    // Game checks it after the interaction phase and advances to the next dungeon.
-    // Same indirection pattern as hasWon — Game stays decoupled from Staircase.
     public boolean wantsNextLevel() {
         return wantsNextLevel;
     }
@@ -77,5 +82,15 @@ public class Player extends LivingEntity {
 
     public void clearNextLevelRequest() {
         this.wantsNextLevel = false;
+    }
+
+    public void stageBomb(LitBomb bomb) {
+        this.pendingBomb = bomb;
+    }
+
+    public LitBomb takePendingBomb() {
+        LitBomb b = this.pendingBomb;
+        this.pendingBomb = null;
+        return b;
     }
 }
